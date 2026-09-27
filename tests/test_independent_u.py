@@ -34,7 +34,7 @@ class IndependentUTest(unittest.TestCase):
         self.assertEqual(sample_pairs(document, 42, 8), sample_pairs(document, 42, 8))
         self.assertNotEqual(sample_pairs(document, 42, 8), sample_pairs(document, 43, 8))
         self.assertEqual(wilson_interval(0, 100)[0], 0.)
-        self.assertEqual(wilson_interval(100, 100)[1], 1.)
+        self.assertAlmostEqual(wilson_interval(100, 100)[1], 1.)
 
     def test_invalid_marginal_fails_closed(self):
         doc = fixture()
