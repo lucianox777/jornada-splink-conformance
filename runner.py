@@ -13,7 +13,7 @@ RESULT = 'JORNADA_SPLINK_IBGE_U_REPLAY_RESULT_V1'
 STATES = {3: 'EXACT', 2: 'HIGH', 1: 'MEDIUM', 0: 'LOW'}
 
 
-def run(source: Path, destination: Path, enforce_hash: bool):
+def run(source: Path, destination: Path, enforce_hash: bool, emit_comparison_diagnostics: bool = True):
     import pandas as pd
     import splink
     from splink import Linker, SettingsCreator, DuckDBAPI, block_on
@@ -66,19 +66,22 @@ def run(source: Path, destination: Path, enforce_hash: bool):
         pairs=[dict(pair_index=i, splink_state=actual[i]) for i in range(count)])
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(result, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-    disagreements = [dict(pair_index=i, left_name=p['left_name'], right_name=p['right_name'],
-        c_sharp_state=p['c_sharp_state'], splink_state=actual[i])
-        for i, p in enumerate(pairs) if p['c_sharp_state'] != actual[i]]
     summary = dict(input=source.name, input_sha256=sha, output=destination.name,
         output_sha256=hashlib.sha256(destination.read_bytes()).hexdigest(),
-        pair_count=count, disagreements=len(disagreements),
-        c_sharp_support=dict(collections.Counter(p['c_sharp_state'] for p in pairs)),
-        splink_support=dict(collections.Counter(actual.values())),
-        limitation='State agreement only; not independent u estimation or calibration validation')
-    destination.with_suffix('.summary.json').write_text(json.dumps(summary, indent=2)+'\n', encoding='utf-8')
-    destination.with_suffix('.divergences.json').write_text(json.dumps(disagreements, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+        pair_count=count, splink_support=dict(collections.Counter(actual.values())),
+        limitation='State classification only; no independently trained u parameters')
+    if emit_comparison_diagnostics:
+        disagreements = [dict(pair_index=i, left_name=p['left_name'], right_name=p['right_name'],
+            c_sharp_state=p['c_sharp_state'], splink_state=actual[i])
+            for i, p in enumerate(pairs) if p['c_sharp_state'] != actual[i]]
+        summary['disagreements'] = len(disagreements)
+        summary['c_sharp_support'] = dict(collections.Counter(p['c_sharp_state'] for p in pairs))
+        summary['limitation'] = 'Same-pair state agreement only; not independent u estimation'
+        destination.with_suffix('.divergences.json').write_text(
+            json.dumps(disagreements, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+    destination.with_suffix('.summary.json').write_text(
+        json.dumps(summary, indent=2)+'\n', encoding='utf-8')
     return summary
-
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)

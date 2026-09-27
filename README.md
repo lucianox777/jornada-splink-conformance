@@ -54,7 +54,7 @@ Formato exigido para `public-marginals.json` (o exemplo é **inteiramente fictí
 .\.venv\Scripts\python.exe .\independent_u.py .\public-marginals.json .\results\independent --pairs 10000
 ```
 
-O documento de marginais **reais** ainda precisa ser exportado e verificado contra a referência IBGE da Jornada, preservando o hash e os recortes. Os testes da CI usam somente a pequena tabela fictícia acima. Os replays internos gerados por este protótipo têm `c_sharp_state=LOW` como **placeholder do contrato**, não são resultados do C# e não devem ser usados para medir discordância entre classificadores. Os relatórios de divergência intermediários produzidos pelo runner são, nesse modo, artefatos técnicos **sem interpretação estatística**. Não importar `u` no banco nem afirmar calibração independente antes de comparar com o C# usando marginais reais e tolerâncias pré-fixadas.
+O documento de marginais **reais** ainda precisa ser exportado e verificado contra a referência IBGE da Jornada, preservando o hash e os recortes. Os testes da CI usam somente a pequena tabela fictícia acima. Os replays internos gerados por este protótipo têm `c_sharp_state=LOW` como **placeholder do contrato**, não são resultados do C# e não devem ser usados para medir discordância entre classificadores. Nesse modo, o runner **não gera relatórios de divergência nem suporte C#**, pois os estados C# no replay são apenas placeholders; a saída válida é exclusivamente a distribuição de estados do Splink e sua incerteza amostral. Não importar `u` no banco nem afirmar calibração independente antes de comparar com o C# usando marginais reais e tolerâncias pré-fixadas.
 
 ## Limites da evidência
 
