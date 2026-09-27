@@ -64,6 +64,10 @@ class IndependentUTest(unittest.TestCase):
                 self.assertEqual(set(run["states"]), {"EXACT", "HIGH", "MEDIUM", "LOW"})
             self.assertTrue((out / "independent-u-report.json").exists())
             self.assertTrue((out / "independent-41.splink-result.json").exists())
+            self.assertFalse((out / "independent-41.splink-result.divergences.json").exists())
+            summary = json.loads((out / "independent-41.splink-result.summary.json").read_text())
+            self.assertNotIn("disagreements", summary)
+            self.assertNotIn("c_sharp_support", summary)
 
 
 if __name__ == "__main__":
