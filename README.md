@@ -31,6 +31,31 @@ dotnet run --project .\src\Jornada.Linkage.Evaluation -c Release -- --check-spli
 
 Os JSONs grandes de entrada e resultados **não são versionados aqui**. Preserve-os com seus hashes no acervo de evidências; `results/` está no `.gitignore`. A CI executa apenas testes sintéticos pequenos, com o Splink real fixado nas dependências.
 
+
+## Estimador independente de `u` — protótipo sintético (#2)
+
+O módulo `independent_u.py` gera novos pares por `random.Random` e amostragem ponderada das **marginais públicas fornecidas explicitamente**; não reutiliza o sorteio C# nem o replay dos mesmos pares. Classifica com Splink real e registra, por estado e seed, suporte, frequência, intervalo Wilson de 95%, SHA-256 e probabilidade analítica de colisão exata. Seeds pré-declaradas: `20261001`, `20261002`, `20261003`. A hipótese de independência prenome × sobrenome é **artificial**, não uma distribuição conjunta publicada pelo IBGE.
+
+Formato exigido para `public-marginals.json` (o exemplo é **inteiramente fictício**, não contém frequências reais do IBGE):
+
+```json
+{
+  "schema_version": "JORNADA_IBGE_PUBLIC_MARGINALS_V1",
+  "reference_code": "CENSO2022_NOMES_BRASIL_V1",
+  "reference_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "first_name_sex": "TODOS",
+  "surname_sex": "TODOS",
+  "first_names": [{"name": "ANA", "occurrences": 3}, {"name": "MARIA", "occurrences": 1}],
+  "surnames": [{"name": "SILVA", "occurrences": 2}, {"name": "SANTOS", "occurrences": 2}]
+}
+```
+
+```powershell
+.\.venv\Scripts\python.exe .\independent_u.py .\public-marginals.json .\results\independent --pairs 10000
+```
+
+O documento de marginais **reais** ainda precisa ser exportado e verificado contra a referência IBGE da Jornada, preservando o hash e os recortes. Os testes da CI usam somente a pequena tabela fictícia acima. Os replays internos gerados por este protótipo têm `c_sharp_state=LOW` como **placeholder do contrato**, não são resultados do C# e não devem ser usados para medir discordância entre classificadores. Os relatórios de divergência intermediários produzidos pelo runner são, nesse modo, artefatos técnicos **sem interpretação estatística**. Não importar `u` no banco nem afirmar calibração independente antes de comparar com o C# usando marginais reais e tolerâncias pré-fixadas.
+
 ## Limites da evidência
 
 Esta primeira etapa verifica **conformidade de estados dos mesmos pares**. O Splink pode avisar que `m/u` não foram treinados e que usa prior padrão. Essa execução **não estima independentemente `u`**, não valida o bootstrap IBGE, a calibração do motor, o prior, decisões de promoção nem segurança em produção. A investigação estatística independente está na [issue Jornada #506](https://github.com/lucianox777/Jornada/issues/506). Evitar alterações silenciosas do comparador C# V1.
