@@ -112,7 +112,7 @@ def estimate(source, destination, pair_count, seeds=SEEDS):
         replay_path = destination / f"independent-{seed}.replay.json"
         replay_path.write_text(json.dumps(replay, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
         result_path = destination / f"independent-{seed}.splink-result.json"
-        run(replay_path, result_path, enforce_hash=False)
+        run(replay_path, result_path, enforce_hash=False, emit_comparison_diagnostics=False)
         result = json.loads(result_path.read_text(encoding="utf-8"))
         counts = {state: 0 for state in STATES}
         for row in result["pairs"]:
