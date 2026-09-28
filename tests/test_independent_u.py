@@ -50,6 +50,17 @@ class IndependentUTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "fields"):
             validate_marginals(doc)
 
+    def test_invalid_seeds_fail_before_writing_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "public.json"
+            source.write_text(json.dumps(fixture()), encoding="utf-8")
+            for seeds in ((), (True,), (-1,), (2**32,), (41, 41), (41, 42.0)):
+                out = Path(tmp) / ("invalid-" + str(len(list(Path(tmp).iterdir()))))
+                with self.subTest(seeds=seeds):
+                    with self.assertRaisesRegex(ValueError, "Seeds"):
+                        estimate(source, out, pair_count=20, seeds=seeds)
+                    self.assertFalse(out.exists(), "Invalid seeds must not create evidence")
+
     def test_independent_three_seed_real_splink(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = Path(tmp) / "public.json"
