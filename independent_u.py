@@ -86,7 +86,8 @@ def exact_collision_probability(document):
 def estimate(source, destination, pair_count, seeds=SEEDS):
     if not 1 <= pair_count <= 100_000:
         raise ValueError("pair_count must be 1..100000")
-    if not seeds or len(set(seeds)) != len(seeds) or any(not isinstance(s, int) for s in seeds):
+    if (not seeds or len(set(seeds)) != len(seeds)
+        or any(type(s) is not int or not 0 <= s <= 0xFFFFFFFF for s in seeds)):
         raise ValueError("Seeds must be distinct integers")
     raw = source.read_bytes()
     document = validate_marginals(json.loads(raw))
